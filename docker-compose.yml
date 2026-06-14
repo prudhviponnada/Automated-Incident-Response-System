@@ -1,0 +1,12 @@
+services:
+  node-a:
+    image: nginx:alpine
+    container_name: healthy_router
+    ports:
+      - "8081:80"
+  
+  node-b:
+    image: nginx:alpine
+    container_name: failing_router
+    ports:
+      - "8082:80"
