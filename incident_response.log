@@ -1,0 +1,6 @@
+2026-06-15 12:01:10,440 - INFO - --- NEW INCIDENT DETECTED ---
+2026-06-15 12:01:10,441 - INFO - Alert ID: INC-1781517667 | Hostname: failing_router | Failed Port: 8082
+2026-06-15 12:01:10,441 - INFO - Starting Level 1 Triage: Checking host state for failing_router
+2026-06-15 12:01:10,488 - CRITICAL - Level 1 Triage Result: Host is completely powered OFF. Node is offline.
+2026-06-15 12:01:10,489 - INFO - Alert payload processed and removed.
+2026-06-15 12:01:10,489 - INFO - --- INCIDENT PAUSED PENDING REMEDIATION (PHASE 3) ---
