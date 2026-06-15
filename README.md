@@ -46,7 +46,7 @@ Spin up the simulated network environment:
 ```text
 docker compose up -d
 ```
-💻 # **Usage & Demonstration**
+#💻  **Usage & Demonstration**
 To see the automated incident lifecycle in action, you will need to open three separate terminal windows.
 
 * Terminal 1: Start the Orchestrator
