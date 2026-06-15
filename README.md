@@ -28,3 +28,46 @@ This project simulates an enterprise alerting pipeline, bridging the gap between
 ├── incident_manager.py      # The Orchestrator: ingests alerts and runs triage
 ├── active_alert.json        # The dynamic alert payload (generated on failure)
 └── incident_response.log    # The system audit trail
+```
+⚙️ Installation & Prerequisites
+You will need Python 3.x and Docker installed on your system.
+
+Clone this repository to your local machine.
+
+Navigate to the project directory:
+
+Bash
+cd incident_managere
+Spin up the simulated network environment:
+
+Bash
+docker compose up -d
+💻 Usage & Demonstration
+To see the automated incident lifecycle in action, you will need to open three separate terminal windows.
+
+Terminal 1: Start the Orchestrator
+This script acts as the automated NOC agent, waiting for alerts.
+
+Bash
+python3 incident_manager.py
+Terminal 2: Start the Detector
+This script continuously surveys the network environment.
+
+Bash
+python3 detector.py
+Terminal 3: Trigger a Simulated Outage
+Crash the simulated router to trigger the incident response pipeline:
+
+Bash
+docker stop failing_router
+Expected Output
+Once the failure is triggered:
+
+detector.py will immediately identify the dropped connection, print a critical warning, write active_alert.json, and halt.
+
+incident_manager.py will instantly detect the JSON payload, parse the target IP/Hostname, execute a simulated ping/hardware check, write the results to incident_response.log, and clean up the alert queue.
+
+📝 Future Roadmap (Phase 3)
+Ansible Integration: Implement ansible-runner within the orchestrator to automatically execute service-restart playbooks (e.g., systemctl restart nginx) upon failed Level 1 triage.
+
+SLA Timer: Introduce strict SLA tracking to measure the exact millisecond duration from detection to remediation.
