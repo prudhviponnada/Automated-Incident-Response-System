@@ -56,6 +56,8 @@ while True:
         with open(ALERT_FILE, 'r') as f:
             alert_data = json.load(f)
             
+        # Ensure these variables are defined!
+        incident_id = alert_data.get('alert_id')
         hostname = alert_data.get('hostname')
         
         # Phase 2: Triage
@@ -68,12 +70,23 @@ while True:
             
             if remediation_success:
                 print("[+] Remediation complete. Verifying recovery...")
-                time.sleep(2) # Give Docker a second to boot it up
+                time.sleep(2)
                 
                 # Stop the SLA Timer
                 resolution_time = round(time.time() - incident_start_time, 2)
-                print(f"[+] Incident Resolved! SLA Time: {resolution_time} seconds.")
-                logging.info(f"--- INCIDENT RESOLVED | MTTR: {resolution_time}s ---")
+                
+                # --- PHASE 4: GENERATE POST-MORTEM REPORT ---
+                report_filename = f"report_{incident_id}.txt"
+                with open(report_filename, "w") as report:
+                    report.write(f"INCIDENT POST-MORTEM REPORT: {incident_id}\n")
+                    report.write("="*40 + "\n")
+                    report.write(f"Timestamp: {time.ctime()}\n")
+                    report.write(f"Target Host: {hostname}\n")
+                    report.write(f"Status: Resolved\n")
+                    report.write(f"MTTR: {resolution_time} seconds\n")
+                
+                print(f"[+] Incident Resolved! Report generated: {report_filename}")
+                logging.info(f"--- INCIDENT RESOLVED | MTTR: {resolution_time}s | Report: {report_filename} ---")
         
         os.remove(ALERT_FILE)
         print("\nAwaiting next alert...\n")
