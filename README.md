@@ -46,7 +46,7 @@ Spin up the simulated network environment:
 ```text
 docker compose up -d
 ```
-#💻  **Usage & Demonstration**
+## 💻  **Usage & Demonstration**
 To see the automated incident lifecycle in action, you will need to open three separate terminal windows.
 
 * Terminal 1: Start the Orchestrator
@@ -63,8 +63,8 @@ This script continuously surveys the network environment.
 ```text
 python3 detector.py
 ```
-*Terminal 3: Trigger a Simulated Outage
-*Crash the simulated router to trigger the incident response pipeline:
+*Terminal 3: Trigger a Simulated Outage. 
+Crash the simulated router to trigger the incident response pipeline:
 
 # **Bash**
 ```text
