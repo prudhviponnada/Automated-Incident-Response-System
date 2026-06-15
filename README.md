@@ -56,28 +56,28 @@ This script acts as the automated NOC agent, waiting for alerts.
 ```text
 python3 incident_manager.py
 ```
-* Terminal 2: Start the Detector
+Terminal 2: Start the Detector
 This script continuously surveys the network environment.
 
 # **Bash**
 ```text
 python3 detector.py
 ```
-*Terminal 3: Trigger a Simulated Outage. 
+Terminal 3: Trigger a Simulated Outage. 
 Crash the simulated router to trigger the incident response pipeline:
 
 # **Bash**
 ```text
 docker stop failing_router
 ```
-Expected Output
+## **Expected Output**
 Once the failure is triggered:
 
 * detector.py will immediately identify the dropped connection, print a critical warning, write active_alert.json, and halt.
 
 * incident_manager.py will instantly detect the JSON payload, parse the target IP/Hostname, execute a simulated ping/hardware check, write the results to incident_response.log, and clean up the alert queue.
 
-📝 # **Future Roadmap (Phase 3)**
+📝 ## **Future Roadmap (Phase 3)**
 * Ansible Integration: Implement ansible-runner within the orchestrator to automatically execute service-restart playbooks (e.g., systemctl restart nginx) upon failed Level 1 triage.
 
 * SLA Timer: Introduce strict SLA tracking to measure the exact millisecond duration from detection to remediation.
