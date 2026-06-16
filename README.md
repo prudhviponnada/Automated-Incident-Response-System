@@ -77,7 +77,12 @@ Once the failure is triggered:
 
 * incident_manager.py will instantly detect the JSON payload, parse the target IP/Hostname, execute a simulated ping/hardware check, write the results to incident_response.log, and clean up the alert queue.
 
-## 📝  **Future Roadmap (Phase 3)**
-* Ansible Integration: Implement ansible-runner within the orchestrator to automatically execute service-restart playbooks (e.g., systemctl restart nginx) upon failed Level 1 triage.
+## 📝  **Phase 3: Ansible Integration**
+* Implement ansible-runner within the orchestrator to automatically execute service-restart playbooks (e.g., systemctl restart nginx) upon failed Level 1 triage.
 
 * SLA Timer: Introduce strict SLA tracking to measure the exact millisecond duration from detection to remediation.
+  ## 📝 **Phase 4: Creating a MTTR report**
+  * The Python script incident manager.py creates an MTTR report that shows the debugging duration, the causes of it and when it happened.
+
+ 
+    ## DROP YOUR VALUABLE FEEDBACK I'M OPEN TO SUGGESTIONS ##
