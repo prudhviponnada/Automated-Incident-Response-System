@@ -1,6 +1,0 @@
-INCIDENT POST-MORTEM REPORT: INC-1781520668
-========================================
-Timestamp: Mon Jun 15 12:51:14 2026
-Target Host: failing_router
-Status: Resolved
-MTTR: 3.38 seconds
