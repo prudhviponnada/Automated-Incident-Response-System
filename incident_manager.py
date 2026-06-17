@@ -4,89 +4,61 @@ import time
 import subprocess
 import logging
 
-logging.basicConfig(
-    filename='incident_response.log',
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
-
+logging.basicConfig(filename='incident_response.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 ALERT_FILE = "active_alert.json"
 
-def run_diagnostic_check(hostname):
-    """Simulates a ping by checking if the container is actively running."""
-    logging.info(f"Starting Level 1 Triage: Checking host state for {hostname}")
+def run_ansible_playbook(playbook_name, hostname):
+    """A dynamic function that can run ANY playbook we tell it to."""
+    print(f"[*] Launching Playbook: {playbook_name} targeting {hostname}...")
     try:
-        result = subprocess.run(
-            ['docker', 'inspect', '-f', '{{.State.Running}}', hostname],
-            capture_output=True, text=True, check=True
-        )
-        if result.stdout.strip() == "true":
-            return "Service Down"
-        else:
-            return "Node Offline"
-    except subprocess.CalledProcessError:
-        return "Node Unreachable"
-
-def run_ansible_remediation(hostname):
-    """Triggers the Ansible playbook to repair the node."""
-    logging.info(f"Triggering Phase 3 Remediation: Ansible Playbook for {hostname}")
-    print(f"[*] Launching Ansible Playbook to repair {hostname}...")
-    
-    try:
-        # Run the ansible command and pass the hostname as an extra variable
-        subprocess.run(
-            ['ansible-playbook', 'remediate.yml', '--extra-vars', f'target_node={hostname}'],
-            check=True
-        )
-        logging.info("Ansible playbook executed successfully. Node should be recovering.")
+        subprocess.run(['ansible-playbook', playbook_name, '--extra-vars', f'target_node={hostname}'], check=True)
         return True
     except subprocess.CalledProcessError:
-        logging.error("Ansible playbook failed to execute.")
         return False
 
-print("Incident Manager started. Waiting for alerts...")
+print("Smart Incident Manager started. Waiting for alerts...")
 
 while True:
     if os.path.exists(ALERT_FILE):
-        incident_start_time = time.time() # Start the SLA Timer!
-        
-        print("\n[!] ALERT DETECTED! Initiating automated response...")
-        logging.info("--- NEW INCIDENT DETECTED ---")
+        incident_start_time = time.time()
+        print("\n[!] ALERT DETECTED! Analyzing payload...")
         
         with open(ALERT_FILE, 'r') as f:
             alert_data = json.load(f)
             
-        # Ensure these variables are defined!
         incident_id = alert_data.get('alert_id')
         hostname = alert_data.get('hostname')
+        failure_type = alert_data.get('failure_type') # We now read what KIND of failure it is!
         
-        # Phase 2: Triage
-        triage_status = run_diagnostic_check(hostname)
-        print(f"[*] Diagnostics complete: {triage_status}")
+        print(f"[*] Triage Diagnosis: {failure_type}")
         
-        # Phase 3: Remediation
-        if triage_status == "Node Offline":
-            remediation_success = run_ansible_remediation(hostname)
+        # --- THE SMART DECISION ENGINE ---
+        if failure_type == "Node_Offline":
+            remediation_success = run_ansible_playbook('remediate.yml', hostname)
             
-            if remediation_success:
-                print("[+] Remediation complete. Verifying recovery...")
-                time.sleep(2)
-                
-                # Stop the SLA Timer
-                resolution_time = round(time.time() - incident_start_time, 2)
-                
-                # --- PHASE 4: GENERATE POST-MORTEM REPORT ---
-                report_filename = f"report_{incident_id}.txt"
-                with open(report_filename, "w") as report:
-                    report.write(f"INCIDENT POST-MORTEM REPORT: {incident_id}\n")
-                    report.write("="*40 + "\n")
-                    report.write(f"Timestamp: {time.ctime()}\n")
-                    report.write(f"Target Host: {hostname}\n")
-                    report.write(f"Status: Resolved\n")
-                    report.write(f"MTTR: {resolution_time} seconds\n")
-                
-                print(f"[+] Incident Resolved! Report generated: {report_filename}")
-                logging.info(f"--- INCIDENT RESOLVED | MTTR: {resolution_time}s | Report: {report_filename} ---")
+        elif failure_type == "App_Error":
+            remediation_success = run_ansible_playbook('remediate_app.yml', hostname)
+            
+        else:
+            print("[!] Unknown failure type. Escalating to human NOC engineer.")
+            remediation_success = False
+
+        # --- POST-MORTEM REPORTING ---
+        if remediation_success:
+            print("[+] Remediation complete. Verifying network recovery...")
+            time.sleep(2)
+            resolution_time = round(time.time() - incident_start_time, 2)
+            
+            report_filename = f"report_{incident_id}.txt"
+            with open(report_filename, "w") as report:
+                report.write(f"INCIDENT POST-MORTEM REPORT: {incident_id}\n")
+                report.write("="*40 + "\n")
+                report.write(f"Target Host: {hostname}\n")
+                report.write(f"Root Cause: {failure_type}\n")
+                report.write(f"Status: Resolved via Automation\n")
+                report.write(f"MTTR: {resolution_time} seconds\n")
+            
+            print(f"[+] Incident Resolved! Report: {report_filename}")
         
         os.remove(ALERT_FILE)
         print("\nAwaiting next alert...\n")

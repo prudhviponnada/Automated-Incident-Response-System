@@ -1,45 +1,46 @@
-import socket
+import urllib.request
+import urllib.error
 import time
 import json
 from datetime import datetime, timezone
 
-def check_port(ip, port):
-    """Attempts to connect to the specified IP and Port."""
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(2)
-    result = sock.connect_ex((ip, port))
-    sock.close()
-    return result == 0 
-
-# Reverting to WSL-friendly localhost routing
 NODES_TO_MONITOR = [
-    {"hostname": "healthy_router", "ip": "127.0.0.1", "port": 8081},
-    {"hostname": "failing_router", "ip": "127.0.0.1", "port": 8082}
+    {"hostname": "healthy_router", "url": "http://127.0.0.1:8081"},
+    {"hostname": "failing_router", "url": "http://127.0.0.1:8082"}
 ]
 
-print("Initializing NOC Surveillance...")
-print("Starting continuous monitoring loop...")
+print("Initializing Advanced NOC Surveillance (HTTP Layer)...")
 
 while True:
     for node in NODES_TO_MONITOR:
-        is_up = check_port(node["ip"], node["port"])
-        
-        if not is_up:
+        try:
+            # Try to load the webpage
+            response = urllib.request.urlopen(node["url"], timeout=3)
+            # If we get here, the page loaded (HTTP 200 OK)
+            continue 
+            
+        except urllib.error.HTTPError as e:
+            # The server is UP, but returning a broken page (e.g., 500 Internal Server Error)
+            print(f"\nWARNING: {node['hostname']} returned HTTP {e.code}! Generating alert...")
+            failure_type = "App_Error"
+            
+        except urllib.error.URLError:
+            # The server is completely OFF
             print(f"\nCRITICAL: {node['hostname']} is DOWN! Generating alert...")
-            
-            alert_data = {
-                "alert_id": f"INC-{int(time.time())}",
-                "timestamp": datetime.now(timezone.utc).isoformat(),
-                "hostname": node["hostname"],
-                "ip_address": node["ip"],
-                "failed_port": node["port"],
-                "status": "Unreachable"
-            }
-            
-            with open("active_alert.json", "w") as alert_file:
-                json.dump(alert_data, alert_file, indent=4)
-            
-            print("Alert generated. Halting detection to wait for remediation.")
-            exit(1) 
+            failure_type = "Node_Offline"
+
+        # Generate the payload
+        alert_data = {
+            "alert_id": f"INC-{int(time.time())}",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "hostname": node["hostname"],
+            "failure_type": failure_type
+        }
+        
+        with open("active_alert.json", "w") as alert_file:
+            json.dump(alert_data, alert_file, indent=4)
+        
+        print("Alert generated. Halting detection to wait for remediation.")
+        exit(1) 
             
     time.sleep(5)
