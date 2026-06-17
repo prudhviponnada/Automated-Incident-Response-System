@@ -66,24 +66,42 @@ python3 detector.py
 
 # Terminal 3:**Bash**
 Trigger a Simulated Outage. 
-Crash the simulated router to trigger the incident response pipeline:
+scenario 1: Node Offline (Hard Down). Crash the simulated router to trigger the incident response pipeline:
 
 ```text
 docker stop failing_router
+
 ```
-## **Expected Output**
+Scenario 2: Application Error (Grey Failure)
+
+Simulates a developer pushing a corrupt Nginx configuration, causing HTTP 500 errors.
+```text
+docker exec failing_router sh -c "echo 'events {} http { server { listen 80; location / { return 500; } } }' > /etc/nginx/nginx.conf && nginx -s reload"
+
+```
+Scenario 3: Resource Exhaustion (CPU Spike)
+
+Injects an infinite loop to max out the container's CPU at 100%.
+```text
+docker exec -d failing_router sh -c "while true; do true; done"
+
+```
+Scenario 4: High Latency (The WSL2 Workaround)
+
+Architectural Note: Because the WSL2 kernel lacks the netem traffic control module for Layer-3 shaping, this scenario simulates congestion at Layer-7 by injecting a custom Python HTTP server that intentionally delays responses by 3 seconds, triggering the 1.5s SLA violation.
+```text
+docker exec -d failing_router sh -c "apk add --no-cache python3 && nginx -s quit && python3 -c 'import time, http.server; class S(http.server.SimpleHTTPRequestHandler): \n def do_GET(self): time.sleep(3); self.send_response(200); self.end_headers()\nhttp.server.HTTPServer((\"\", 80), S).serve_forever()'"
+
+```
+## **Expected Output & Reporting**
 Once the failure is triggered:
 
-* detector.py will immediately identify the dropped connection, print a critical warning, write active_alert.json, and halt.
+1. detector.py immediately identifies the drop, classifies the failure type, writes active_alert.json, and halts.
 
-* incident_manager.py will instantly detect the JSON payload, parse the target IP/Hostname, execute a simulated ping/hardware check, write the results to incident_response.log, and clean up the alert queue.
+2.  incident_manager.py detects the JSON payload, reads the failure_type, and triggers the corresponding Ansible playbook.
 
-## 📝  **Phase 3: Ansible Integration**
-* Implement ansible-runner within the orchestrator to automatically execute service-restart playbooks (e.g., systemctl restart nginx) upon failed Level 1 triage.
+3. Ansible repairs the node.
 
-* SLA Timer: Introduce strict SLA tracking to measure the exact millisecond duration from detection to remediation.
-  ## 📝 **Phase 4: Creating a MTTR report**
-  * The Python script incident manager.py creates an MTTR report that shows the debugging duration, the causes of it and when it happened.
-
+4. The Orchestrator generates a specific Post-Mortem Report (e.g., report_INC-123456.txt) documenting the exact Mean Time To Resolution (MTTR).
  
     ## DROP YOUR VALUABLE FEEDBACK I'M OPEN TO SUGGESTIONS ##
