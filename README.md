@@ -22,11 +22,15 @@ This project simulates an enterprise alerting pipeline, bridging the gap between
 ## 📂 Project Structure
 
 ```text
-├── docker-compose.yml       # Provisions the simulated network nodes
-├── detector.py              # The Watchdog: monitors nodes and generates alerts
-├── incident_manager.py      # The Orchestrator: ingests alerts and runs triage
-├── active_alert.json        # The dynamic alert payload (generated on failure)
-└── incident_response.log    # The system audit trail
+├── docker-compose.yml       # Provisions the simulated network nodes
+├── detector.py              # The Watchdog: monitors nodes, CPU, and latency
+├── incident_manager.py      # The Master Orchestrator: routes alerts to Ansible
+├── remediate.yml            # Playbook: Fixes complete node outages
+├── remediate_app.yml        # Playbook: Fixes HTTP 500 / Config corruption
+├── remediate_cpu.yml        # Playbook: Fixes 100% Resource Exhaustion
+├── remediate_network.yml    # Playbook: Fixes Latency/QoS degradation
+├── active_alert.json        # The dynamic alert payload (generated dynamically)
+└── incident_response.log    # The system audit trail (generated dynamically)
 ```
 ## ⚙️  ** Installation & Prerequisites**
 * You will need Python 3.x and Docker installed on your system.
@@ -37,7 +41,7 @@ This project simulates an enterprise alerting pipeline, bridging the gap between
 
 # **Bash**
 ```text
-cd Automated Incident Response System for WSL2
+cd Automated-Incident-Response-System-for-WSL2
 ```
 Spin up the simulated network environment:
 
