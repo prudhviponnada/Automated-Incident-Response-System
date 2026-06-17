@@ -58,17 +58,17 @@ python3 incident_manager.py
 
 
 # Terminal 2: start watchdog 
-Start the Detector
+Start the Detector.
 This script continuously surveys the network environment.
 ```text
 python3 detector.py
 ```
-Terminal 3: Trigger a Simulated Outage. 
-Crash the simulated router to trigger the incident response pipeline:
 
 # Terminal 3:**Bash**
+Trigger a Simulated Outage. 
+Crash the simulated router to trigger the incident response pipeline:
+
 ```text
-docker-compose up -d
 docker stop failing_router
 ```
 ## **Expected Output**
