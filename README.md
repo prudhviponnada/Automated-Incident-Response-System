@@ -1,5 +1,5 @@
 
-# Automated Incident Response System
+# Automated Incident Response System for WSL2
 
 An automated, lightweight Network Operations Center (NOC) orchestrator designed to detect infrastructure failures, generate standard JSON alerts, and perform Level 1 automated triage. 
 
