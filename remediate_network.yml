@@ -4,11 +4,10 @@
   connection: local
   gather_facts: false
   tasks:
-    - name: "Stripping corrupted traffic queues from {{ target_node }}"
-      command: docker exec -u root {{ target_node }} tc qdisc del dev eth0 root
+    - name: "Flushing network queues and restarting node: {{ target_node }}"
+      command: docker restart {{ target_node }}
       register: network_result
-      ignore_errors: yes
 
     - name: "Verify QoS Remediation"
       debug:
-        msg: "Network rules flushed for {{ target_node }}. Output: {{ network_result.stdout | default('Success') }}"
+        msg: "Network latency resolved for {{ target_node }}. Output: {{ network_result.stdout | default('Success') }}"

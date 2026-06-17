@@ -10,6 +10,8 @@ NODES_TO_MONITOR = [
     {"hostname": "failing_router", "url": "http://127.0.0.1:8082"}
 ]
 
+LATENCY_SLA_SECONDS = 1.5 # Anything slower than 1.5s is an incident
+
 def get_cpu_usage(container_name):
     """Uses docker stats to get current CPU percentage."""
     try:
@@ -17,13 +19,12 @@ def get_cpu_usage(container_name):
             ['docker', 'stats', '--no-stream', '--format', '{{.CPUPerc}}', container_name],
             capture_output=True, text=True, check=True
         )
-        # Convert "100.00%" to a float 100.00
         cpu_str = result.stdout.strip().replace('%', '')
         return float(cpu_str) if cpu_str else 0.0
     except subprocess.CalledProcessError:
         return 0.0
 
-print("Initializing Ultimate NOC Surveillance (HTTP & CPU Layer)...")
+print("Initializing Ultimate NOC Surveillance (All 4 Scenarios)...")
 
 while True:
     for node in NODES_TO_MONITOR:
@@ -32,18 +33,25 @@ while True:
         # 1. Check CPU Usage
         cpu_usage = get_cpu_usage(node["hostname"])
         if cpu_usage > 80.0:
-            print(f"\nCRITICAL: {node['hostname']} CPU is maxed out at {cpu_usage}%! Generating alert...")
+            print(f"\nCRITICAL: {node['hostname']} CPU is maxed out at {cpu_usage}%!")
             failure_type = "CPU_Spike"
             
-        # 2. Check Web Service (Only if CPU is fine)
+        # 2. Check Web Service & Latency (Only if CPU is fine)
         if not failure_type:
             try:
-                response = urllib.request.urlopen(node["url"], timeout=3)
+                start_time = time.time()
+                response = urllib.request.urlopen(node["url"], timeout=4)
+                response_time = time.time() - start_time
+                
+                if response_time > LATENCY_SLA_SECONDS:
+                    print(f"\nWARNING: {node['hostname']} is experiencing High Latency ({round(response_time, 2)}s)!")
+                    failure_type = "High_Latency"
+                    
             except urllib.error.HTTPError as e:
-                print(f"\nWARNING: {node['hostname']} returned HTTP {e.code}! Generating alert...")
+                print(f"\nWARNING: {node['hostname']} returned HTTP {e.code}!")
                 failure_type = "App_Error"
             except urllib.error.URLError:
-                print(f"\nCRITICAL: {node['hostname']} is DOWN! Generating alert...")
+                print(f"\nCRITICAL: {node['hostname']} is DOWN!")
                 failure_type = "Node_Offline"
 
         # 3. Generate Alert if any failure was detected

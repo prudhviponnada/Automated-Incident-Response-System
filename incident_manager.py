@@ -8,7 +8,7 @@ logging.basicConfig(filename='incident_response.log', level=logging.INFO, format
 ALERT_FILE = "active_alert.json"
 
 def run_ansible_playbook(playbook_name, hostname):
-    """A dynamic function that can run ANY playbook we tell it to."""
+    """A dynamic function that executes the correct Ansible playbook."""
     print(f"[*] Launching Playbook: {playbook_name} targeting {hostname}...")
     try:
         subprocess.run(['ansible-playbook', playbook_name, '--extra-vars', f'target_node={hostname}'], check=True)
@@ -16,7 +16,7 @@ def run_ansible_playbook(playbook_name, hostname):
     except subprocess.CalledProcessError:
         return False
 
-print("Smart Incident Manager started. Waiting for alerts...")
+print("Master Incident Manager started. Waiting for alerts...")
 
 while True:
     if os.path.exists(ALERT_FILE):
@@ -28,18 +28,23 @@ while True:
             
         incident_id = alert_data.get('alert_id')
         hostname = alert_data.get('hostname')
-        failure_type = alert_data.get('failure_type') # We now read what KIND of failure it is!
+        failure_type = alert_data.get('failure_type') 
         
         print(f"[*] Triage Diagnosis: {failure_type}")
         
-        # --- THE SMART DECISION ENGINE ---
+        # --- THE MASTER DECISION ENGINE (ALL 4 SCENARIOS) ---
         if failure_type == "Node_Offline":
             remediation_success = run_ansible_playbook('remediate.yml', hostname)
             
         elif failure_type == "App_Error":
             remediation_success = run_ansible_playbook('remediate_app.yml', hostname)
+            
         elif failure_type == "CPU_Spike":
-            remediation_success = run_ansible_playbook('remediate_cpu.yml', hostname)    
+            remediation_success = run_ansible_playbook('remediate_cpu.yml', hostname)
+            
+        elif failure_type == "High_Latency":
+            remediation_success = run_ansible_playbook('remediate_network.yml', hostname)
+            
         else:
             print("[!] Unknown failure type. Escalating to human NOC engineer.")
             remediation_success = False
@@ -60,6 +65,7 @@ while True:
                 report.write(f"MTTR: {resolution_time} seconds\n")
             
             print(f"[+] Incident Resolved! Report: {report_filename}")
+            logging.info(f"--- INCIDENT RESOLVED | MTTR: {resolution_time}s | Report: {report_filename} ---")
         
         os.remove(ALERT_FILE)
         print("\nAwaiting next alert...\n")
