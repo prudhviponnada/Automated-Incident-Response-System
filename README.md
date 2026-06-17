@@ -84,5 +84,5 @@ Once the failure is triggered:
   ## 📝 **Phase 4: Creating a MTTR report**
   * The Python script incident manager.py creates an MTTR report that shows the debugging duration, the causes of it and when it happened.
 
- 
-    ## DROP YOUR VALUABLE FEEDBACK I'M OPEN TO SUGGESTIONS ##
+ 
+    ## DROP YOUR VALUABLE FEEDBACK I'M OPEN TO SUGGESTIONS ##
