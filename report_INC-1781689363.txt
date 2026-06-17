@@ -1,0 +1,6 @@
+INCIDENT POST-MORTEM REPORT: INC-1781689363
+========================================
+Target Host: failing_router
+Root Cause: CPU_Spike
+Status: Resolved via Automation
+MTTR: 3.82 seconds

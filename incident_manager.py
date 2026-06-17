@@ -38,7 +38,8 @@ while True:
             
         elif failure_type == "App_Error":
             remediation_success = run_ansible_playbook('remediate_app.yml', hostname)
-            
+        elif failure_type == "CPU_Spike":
+            remediation_success = run_ansible_playbook('remediate_cpu.yml', hostname)    
         else:
             print("[!] Unknown failure type. Escalating to human NOC engineer.")
             remediation_success = False
