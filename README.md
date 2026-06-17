@@ -55,10 +55,11 @@ This script acts as the automated NOC agent, waiting for alerts.
 ```text
 python3 incident_manager.py
 ```
-Terminal 2: Start the Detector
-This script continuously surveys the network environment.
 
-# Terminal 2: start watchdog **Bash**
+
+# Terminal 2: start watchdog 
+Start the Detector
+This script continuously surveys the network environment.
 ```text
 python3 detector.py
 ```
