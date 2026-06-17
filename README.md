@@ -28,7 +28,7 @@ This project simulates an enterprise alerting pipeline, bridging the gap between
 ├── active_alert.json        # The dynamic alert payload (generated on failure)
 └── incident_response.log    # The system audit trail
 ```
-⚙️ # ** Installation & Prerequisites**
+## ⚙️  ** Installation & Prerequisites**
 * You will need Python 3.x and Docker installed on your system.
 
 * Clone this repository to your local machine.
@@ -37,7 +37,7 @@ This project simulates an enterprise alerting pipeline, bridging the gap between
 
 # **Bash**
 ```text
-cd incident_managere
+cd Automated Incident Response System for WSL2
 ```
 Spin up the simulated network environment:
 
@@ -66,7 +66,7 @@ python3 detector.py
 
 # Terminal 3:**Bash**
 Trigger a Simulated Outage. 
-scenario 1: Node Offline (Hard Down). Crash the simulated router to trigger the incident response pipeline:
+Scenario 1: Node Offline (Hard Down). Crash the simulated router to trigger the incident response pipeline:
 
 ```text
 docker stop failing_router
